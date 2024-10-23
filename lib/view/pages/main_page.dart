@@ -1,9 +1,7 @@
 import 'package:coffee_vision/controller/cubit.dart';
-import 'package:coffee_vision/view/pages/auth_page.dart';
 import 'package:coffee_vision/view/pages/camera_page.dart';
 import 'package:coffee_vision/view/pages/favorit_page.dart';
 import 'package:coffee_vision/view/pages/home_page.dart';
-import 'package:coffee_vision/view/pages/login_page.dart';
 import 'package:coffee_vision/view/pages/profile_page.dart';
 import 'package:coffee_vision/view/pages/resep_page.dart';
 import 'package:coffee_vision/view/shared/theme.dart';

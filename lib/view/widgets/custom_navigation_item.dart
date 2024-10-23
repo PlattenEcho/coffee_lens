@@ -58,7 +58,7 @@ class CustomNavBarItem2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.read<PageCubit>().setPage(index);
+        Navigator.pushNamed(context, '/camera-page');
       },
       child: SizedBox(
         width: MediaQuery.of(context).size.width / 5,
