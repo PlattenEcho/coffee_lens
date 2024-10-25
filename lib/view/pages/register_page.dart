@@ -1,6 +1,9 @@
+import 'package:coffee_vision/controller/authentication_controller.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/button.dart';
+import 'package:coffee_vision/view/widgets/toast.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -11,6 +14,12 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             gapH4,
             TextField(
+              controller: usernameController,
               decoration: InputDecoration(
                   filled: true,
                   focusedBorder: UnderlineInputBorder(
@@ -66,6 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             gapH4,
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                   filled: true,
                   focusedBorder: UnderlineInputBorder(
@@ -82,6 +93,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             gapH4,
             TextField(
+              controller: passwordController,
               decoration: InputDecoration(
                   filled: true,
                   focusedBorder: UnderlineInputBorder(
@@ -99,6 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             gapH4,
             TextField(
+              controller: confirmPasswordController,
               decoration: InputDecoration(
                   filled: true,
                   focusedBorder: UnderlineInputBorder(
@@ -113,7 +126,35 @@ class _RegisterPageState extends State<RegisterPage> {
               bgColor: kPrimaryColor,
               color: kWhiteColor,
               text: "Daftar",
-              onPressed: () {},
+              onPressed: () async {
+                if (passwordController.text.trim().length >= 8) {
+                  await createUser(
+                      context,
+                      emailController.text.trim(),
+                      usernameController.text.trim(),
+                      passwordController.text.trim(),
+                      confirmPasswordController.text.trim());
+                } else {
+                  showToast(context, "Password minimal berpanjang 8 karakter");
+                }
+              },
+            ),
+            gapH8,
+            Center(
+              child: RichText(
+                  text: TextSpan(
+                      style: mediumTextStyle.copyWith(),
+                      children: <TextSpan>[
+                    const TextSpan(text: "Sudah punya akun? "),
+                    TextSpan(
+                        text: "Masuk di sini",
+                        style: blackTextStyle.copyWith(color: kPrimaryColor),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.pushReplacementNamed(
+                                context, '/login-page');
+                          })
+                  ])),
             ),
           ],
         ),

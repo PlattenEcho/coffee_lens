@@ -1,3 +1,4 @@
+import 'package:coffee_vision/main.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/button.dart';
@@ -18,7 +19,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: kPrimaryLightColor,
       appBar: AppBar(
           title: Text(
-            "Welcome to Coffee Vision!",
+            "Welcome to Brew Lens!",
             style: blackTextStyle.copyWith(fontSize: 24),
           ),
           backgroundColor: kPrimaryLightColor,
@@ -44,7 +45,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Coba Coffee Vision AI!",
+                          "Coba Brew Lens AI!",
                           style: boldTextStyle.copyWith(
                               color: kWhiteColor, fontSize: 18),
                         ),
@@ -62,7 +63,11 @@ class _HomePageState extends State<HomePage> {
                             ),
                             elevation: 0,
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            await supabase
+                                .from('test')
+                                .insert({'test': 'The Shire'});
+                          },
                           child: Text(
                             "Klik Disini!",
                             style: boldTextStyle.copyWith(

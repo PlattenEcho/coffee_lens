@@ -57,7 +57,7 @@ class _CameraPageState extends State<CameraPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Coba Coffee Vision AI!",
+              "Coba Brew Lens AI!",
               style: blackTextStyle.copyWith(fontSize: 24),
             ),
             Text(

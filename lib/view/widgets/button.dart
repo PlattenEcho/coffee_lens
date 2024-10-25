@@ -1,3 +1,4 @@
+import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +17,7 @@ class Button extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(vertical: 12),
@@ -30,6 +32,49 @@ class Button extends StatelessWidget {
           text,
           style: whiteTextStyle.copyWith(
               color: color, fontWeight: bold, fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingButton extends StatelessWidget {
+  final String title;
+  final String desc;
+  final Function() onTap;
+
+  const SettingButton({
+    Key? key,
+    required this.title,
+    required this.desc,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    dynamic parentWidth = MediaQuery.of(context).size.width;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(12),
+        width: double.infinity,
+        decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: kSecondaryColor))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: blackTextStyle.copyWith(fontSize: 16),
+            ),
+            Text(
+              desc,
+              style: regularTextStyle.copyWith(fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+          ],
         ),
       ),
     );

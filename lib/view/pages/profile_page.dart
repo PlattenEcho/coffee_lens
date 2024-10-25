@@ -22,6 +22,16 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: kPrimaryLightColor,
         automaticallyImplyLeading: false,
         elevation: 0,
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/setting-page');
+              },
+              icon: Icon(
+                Icons.settings,
+                color: kTextColor,
+              ))
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),

@@ -17,7 +17,7 @@ Color kGreyColor = const Color(0xff7E7E7E);
 Color kYellowColor = const Color(0xffFBBE21);
 Color kLightGreyColor = const Color(0xffEBEBEB);
 Color kGreenColor = const Color(0xff29CB9E);
-Color kRedColor = const Color.fromARGB(255, 243, 57, 113);
+Color kRedColor = const Color(0xffFF5E5E);
 Color kTextColor = const Color(0xff313131);
 
 TextStyle lightTextStyle =
