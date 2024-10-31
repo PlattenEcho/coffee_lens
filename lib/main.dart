@@ -1,13 +1,18 @@
 import 'package:coffee_vision/controller/cubit.dart';
 import 'package:coffee_vision/controller/storage_controller.dart';
+import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/view/pages/arabica_page.dart';
 import 'package:coffee_vision/view/pages/auth_page.dart';
 import 'package:coffee_vision/view/pages/camera_page.dart';
+import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/pages/login_page.dart';
 import 'package:coffee_vision/view/pages/main_page.dart';
 import 'package:coffee_vision/view/pages/onboarding.dart';
 import 'package:coffee_vision/view/pages/register_page.dart';
+import 'package:coffee_vision/view/pages/robusta_page.dart';
 import 'package:coffee_vision/view/pages/setting_page.dart';
 import 'package:coffee_vision/view/pages/splash_screen.dart';
+import 'package:coffee_vision/view/pages/upload_resep.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -47,8 +52,37 @@ class MyApp extends StatelessWidget {
         '/register-page': (context) => const RegisterPage(),
         '/main-page': (context) => const MainPage(),
         '/camera-page': (context) => CameraPage(),
-        '/setting-page': (context) => SettingPage()
+        '/setting-page': (context) => SettingPage(),
+        '/upload-resep': (context) => const UploadResep(),
+        '/detail-resep': (context) => DetailResep(
+              recipe: sampleRecipe,
+            ),
+        '/robusta-page': (context) => const RobustaPage(),
+        '/arabica-page': (context) => const ArabicaPage()
       }),
     );
   }
 }
+
+final sampleRecipe = Recipe(
+  title: "Iced Coffee Latte",
+  category: "Beverage",
+  description:
+      "A refreshing iced coffee latte with a creamy and smooth texture.",
+  duration: "10 mins",
+  rating: 4.5,
+  imageUrl: "assets/onboarding1.jpg",
+  tools: ["Blender", "Measuring Cup", "Glass"],
+  ingredients: [
+    Ingredient(name: "Coffee", quantity: "2 tablespoons"),
+    Ingredient(name: "Milk", quantity: "1 cup"),
+    Ingredient(name: "Ice Cubes", quantity: "1 cup"),
+    Ingredient(name: "Sugar", quantity: "1 teaspoon"),
+  ],
+  steps: [
+    "Brew the coffee and let it cool.",
+    "Add milk, coffee, ice, and sugar to the blender.",
+    "Blend until smooth.",
+    "Pour into a glass and enjoy your iced coffee latte!",
+  ],
+);

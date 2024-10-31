@@ -98,16 +98,20 @@ class _HomePageState extends State<HomePage> {
             ),
             gapH12,
             ImageCard(
-                imageUrl: "assets/robusta.png",
+                imageUrl: "assets/vector_robusta.png",
                 title: "Robusta",
-                desc: "Rasa pahit yang tebal dan tinggi kafein ",
-                onTap: () {}),
+                desc: "Rasa pahit yang tebal dan tinggi kafein",
+                onTap: () {
+                  Navigator.pushNamed(context, "/robusta-page");
+                }),
             gapH8,
             ImageCard(
-                imageUrl: "assets/arabika.png",
+                imageUrl: "assets/vector_arabika.png",
                 title: "Arabika",
-                desc: "Cita rasa asam yang lembut dan kompleks ",
-                onTap: () {}),
+                desc: "Cita rasa asam yang lembut dan kompleks",
+                onTap: () {
+                  Navigator.pushNamed(context, "/arabica-page");
+                }),
             gapH12,
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -133,9 +137,9 @@ class _HomePageState extends State<HomePage> {
               style: regularTextStyle.copyWith(fontSize: 14, color: kGreyColor),
             ),
             gapH8,
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
             gapH(80)
           ],
         ),

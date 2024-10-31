@@ -1,4 +1,3 @@
-import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -52,8 +51,6 @@ class SettingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    dynamic parentWidth = MediaQuery.of(context).size.width;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(

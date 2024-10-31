@@ -77,7 +77,25 @@ class MainPage extends StatelessWidget {
       return Scaffold(
         backgroundColor: kPrimaryLightColor,
         body: Stack(
-          children: [buildContent(currentIndex), customNavBar()],
+          children: [
+            buildContent(currentIndex),
+            customNavBar(),
+            currentIndex == 1
+                ? Positioned(
+                    bottom: 90,
+                    right: 20,
+                    child: FloatingActionButton(
+                      backgroundColor: kPrimaryColor,
+                      tooltip: 'Upload Resep',
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/upload-resep');
+                      },
+                      child:
+                          const Icon(Icons.add, color: Colors.white, size: 28),
+                    ),
+                  )
+                : SizedBox(),
+          ],
         ),
       );
     });

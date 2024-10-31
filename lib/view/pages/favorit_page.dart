@@ -29,27 +29,27 @@ class _FavoritPageState extends State<FavoritPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
-            gapH12,
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
-            gapH12,
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
-            gapH12,
-            Row(
-              children: [ResepCard(), gapW12, ResepCard()],
-            ),
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
+            // gapH12,
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
+            // gapH12,
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
+            // gapH12,
+            // Row(
+            //   children: [ResepCard(), gapW12, ResepCard()],
+            // ),
             gapH(80)
           ],
         ),

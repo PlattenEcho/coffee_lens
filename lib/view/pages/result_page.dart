@@ -1,13 +1,69 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/button.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class ResultPage extends StatelessWidget {
+class ResultPage extends StatefulWidget {
   final File image;
 
   const ResultPage({super.key, required this.image});
+
+  @override
+  State<ResultPage> createState() => _ResultPageState();
+}
+
+class _ResultPageState extends State<ResultPage> {
+  int Result = 0;
+  String? coffeeType; // To store the predicted coffee type
+  String? coffeeDescription; // To store additional information
+
+// Function to upload the image and get prediction
+  Future<void> uploadImage() async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://192.168.56.1:5000/predict'),
+    );
+    request.files.add(
+      await http.MultipartFile.fromPath('file', widget.image.path),
+    );
+
+    try {
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        final data = jsonDecode(responseData);
+        setState(() {
+          if (data['class'] == 'robusta') {
+            coffeeType = "Robusta";
+            coffeeDescription = "Rasa pahit yang tebal dan tinggi kafein";
+          } else if (data['class'] == 'arabica') {
+            coffeeType = "Arabica";
+            coffeeDescription = "Cita rasa asam yang lembut dan kompleks";
+          }
+        });
+      } else {
+        setState(() {
+          coffeeType = 'Error';
+          coffeeDescription = 'Failed to predict coffee type.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        coffeeType = 'Error';
+        coffeeDescription = 'An error occurred while uploading the image.';
+      });
+      print("Error: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    uploadImage(); // Call the API on page load
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +102,7 @@ class ResultPage extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.file(
-                  image,
+                  widget.image,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -56,12 +112,13 @@ class ResultPage extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    "Robusta",
+                    coffeeType ??
+                        "Loading...", // Display coffee type or "Loading..."
                     style: blackTextStyle.copyWith(fontSize: 28),
                     textAlign: TextAlign.center,
                   ),
                   Text(
-                    "Rasa pahit yang tebal dan tinggi kafein ",
+                    coffeeDescription ?? "Please wait...",
                     style: mediumTextStyle.copyWith(fontSize: 16),
                   ),
                 ],

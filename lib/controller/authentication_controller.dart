@@ -1,10 +1,12 @@
 import 'package:coffee_vision/controller/crypt_controller.dart';
+import 'package:coffee_vision/controller/cubit.dart';
 import 'package:coffee_vision/controller/storage_controller.dart';
 import 'package:coffee_vision/main.dart';
 import 'package:coffee_vision/model/user.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
@@ -107,7 +109,11 @@ Future<void> authenticateUser(
         storageController.saveData('user', localUser.toMap());
         Navigator.pop(context);
 
-        Navigator.pushReplacementNamed(context, '/main-page');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/main-page',
+          (Route<dynamic> route) => false,
+        );
         showToast(context, "Login berhasil, selamat datang $username");
       } else {
         Navigator.pop(context);
@@ -130,6 +136,12 @@ Future<void> logout(BuildContext context) async {
   StorageController storageController = Get.find<StorageController>();
   storageController.removeData('isLoggedIn');
   storageController.removeData('user');
-  Navigator.pushReplacementNamed(context, '/auth');
+  Navigator.pushNamedAndRemoveUntil(
+    context,
+    '/auth',
+    (Route<dynamic> route) => false,
+  );
+  context.read<PageCubit>().setPage(1);
+
   showToast(context, "Anda telah berhasil logout");
 }

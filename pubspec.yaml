@@ -46,6 +46,8 @@ dependencies:
   encrypt: ^5.0.3
   get: ^4.6.6
   get_storage: ^2.1.1
+  flutter_rating_bar: ^4.0.1
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +69,7 @@ flutter:
   assets:
     - assets/
     - assets/icon/
+    - assets/model/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
