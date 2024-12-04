@@ -73,7 +73,8 @@ Future<void> createUser(BuildContext context, String email, String username,
     showToast(context, "Akun sudah dibuat, silahkan login");
   } catch (e) {
     Navigator.pop(context);
-    showToast(context, "Error: ${e.toString()}");
+    showToast(
+        context, "Terjadi kesalahan: silahkan cek ulang dan register lagi");
     print(e.toString());
   }
 }
@@ -93,10 +94,11 @@ Future<void> authenticateUser(
   try {
     final response = await supabase
         .from('users')
-        .select('id, username, email, password, created_at')
+        .select('id, username, email, password, created_at, img_url, deskripsi')
         .eq('username', username)
         .limit(1)
         .single();
+    print(response);
 
     if (response.isNotEmpty) {
       final String encryptedPassword = response['password'];
@@ -127,21 +129,31 @@ Future<void> authenticateUser(
     }
   } catch (e) {
     Navigator.pop(context);
-    showToast(context, "Terjadi kesalahan: ${e.toString()}");
+    showToast(context, "Terjadi kesalahan: silahkan cek ulang dan login lagi");
     print(e.toString());
   }
 }
 
 Future<void> logout(BuildContext context) async {
-  StorageController storageController = Get.find<StorageController>();
-  storageController.removeData('isLoggedIn');
-  storageController.removeData('user');
-  Navigator.pushNamedAndRemoveUntil(
-    context,
-    '/auth',
-    (Route<dynamic> route) => false,
-  );
-  context.read<PageCubit>().setPage(1);
+  try {
+    StorageController storageController = Get.find<StorageController>();
 
-  showToast(context, "Anda telah berhasil logout");
+    storageController.removeData('isLoggedIn');
+    storageController.removeData('user');
+
+    final user = storageController.getData('user');
+    if (user == null) {
+      print("User data cleared successfully.");
+    }
+    if (context.mounted) {
+      context.read<PageCubit>().setPage(1);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/auth',
+        (Route<dynamic> route) => false,
+      );
+    }
+  } catch (e) {
+    print(e.toString());
+  }
 }

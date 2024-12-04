@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/button.dart';
+import 'package:coffee_vision/view/widgets/toast.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,10 +18,8 @@ class ResultPage extends StatefulWidget {
 
 class _ResultPageState extends State<ResultPage> {
   int Result = 0;
-  String? coffeeType; // To store the predicted coffee type
-  String? coffeeDescription; // To store additional information
-
-// Function to upload the image and get prediction
+  String? coffeeType;
+  String? coffeeDescription;
   Future<void> uploadImage() async {
     final request = http.MultipartRequest(
       'POST',
@@ -62,7 +61,7 @@ class _ResultPageState extends State<ResultPage> {
   @override
   void initState() {
     super.initState();
-    uploadImage(); // Call the API on page load
+    uploadImage();
   }
 
   @override
@@ -131,7 +130,13 @@ class _ResultPageState extends State<ResultPage> {
                 bgColor: kPrimaryColor,
                 color: kWhiteColor,
                 text: "Pelajari lebih lanjut",
-                onPressed: () {},
+                onPressed: () {
+                  coffeeType == null
+                      ? showToast(context, "Loading")
+                      : coffeeType == "Robusta"
+                          ? Navigator.pushNamed(context, "/robusta-page")
+                          : Navigator.pushNamed(context, "/arabica-page");
+                },
               ),
             ),
             gapH8,

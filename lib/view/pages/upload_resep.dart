@@ -4,6 +4,7 @@ import 'package:coffee_vision/controller/resep_controller.dart';
 import 'package:coffee_vision/controller/storage_controller.dart';
 import 'package:coffee_vision/model/recipe.dart';
 import 'package:coffee_vision/view/pages/detail_resep.dart';
+import 'package:coffee_vision/view/pages/preview_resep.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/button.dart';
@@ -28,7 +29,7 @@ class _UploadResepState extends State<UploadResep> {
   List<TextEditingController> stepControllers = [TextEditingController()];
 
   String selectedCategory = "Espresso";
-  File? image; // Add this line to hold the selected image
+  File? image;
 
   List<TextEditingController> tools = [TextEditingController()];
 
@@ -106,7 +107,6 @@ class _UploadResepState extends State<UploadResep> {
                 if (!validateForm()) {
                   showToast(context, "Masih ada kolom yang belum diisi");
                 } else {
-                  // Collect ingredients as a list of Ingredient objects
                   List<Ingredient> ingredientList =
                       ingredients.map((ingredient) {
                     return Ingredient(
@@ -124,22 +124,23 @@ class _UploadResepState extends State<UploadResep> {
                       .toList();
 
                   Recipe recipe = Recipe(
+                    id: 0,
+                    idUser: 0,
                     title: titleController.text.trim(),
                     category: selectedCategory.trim(),
                     duration: minuteController.text.trim(),
                     description: descriptionController.text.trim(),
-                    imageUrl: image?.path ?? '', // Use image path if available
+                    imageUrl: image?.path ?? '',
                     ingredients: ingredientList,
                     rating: 4.8,
                     steps: stepList,
                     tools: toolList,
-                    // Add any other properties as needed
                   );
 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => DetailResep(recipe: recipe)),
+                        builder: (context) => PreviewResep(recipe: recipe)),
                   );
                 }
               },
@@ -573,7 +574,9 @@ class _UploadResepState extends State<UploadResep> {
                         .map((toolController) => toolController.text.trim())
                         .toList();
 
-                    Recipe recipe = Recipe(
+                    uploadRecipe(
+                      context: context,
+                      userId: storageController.getData("user")['id'],
                       title: titleController.text.trim(),
                       category: selectedCategory.trim(),
                       duration: minuteController.text.trim(),
@@ -584,10 +587,6 @@ class _UploadResepState extends State<UploadResep> {
                       steps: stepList,
                       tools: toolList,
                     );
-                    uploadRecipe(
-                        context: context,
-                        userId: storageController.getData("user")['id'],
-                        recipe: recipe);
                   }
                 },
               ),

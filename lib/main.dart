@@ -5,10 +5,16 @@ import 'package:coffee_vision/view/pages/arabica_page.dart';
 import 'package:coffee_vision/view/pages/auth_page.dart';
 import 'package:coffee_vision/view/pages/camera_page.dart';
 import 'package:coffee_vision/view/pages/detail_resep.dart';
+import 'package:coffee_vision/view/pages/edit_profil.dart';
+import 'package:coffee_vision/view/pages/followers_list.dart';
+import 'package:coffee_vision/view/pages/ganti_password.dart';
 import 'package:coffee_vision/view/pages/login_page.dart';
 import 'package:coffee_vision/view/pages/main_page.dart';
 import 'package:coffee_vision/view/pages/onboarding.dart';
 import 'package:coffee_vision/view/pages/register_page.dart';
+import 'package:coffee_vision/view/pages/request_reset.dart';
+import 'package:coffee_vision/view/pages/reset_kode.dart';
+import 'package:coffee_vision/view/pages/reset_password.dart';
 import 'package:coffee_vision/view/pages/robusta_page.dart';
 import 'package:coffee_vision/view/pages/setting_page.dart';
 import 'package:coffee_vision/view/pages/splash_screen.dart';
@@ -19,6 +25,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:coffee_vision/model/user.dart' as Pengguna;
 
 Future<void> main() async {
   await Supabase.initialize(
@@ -55,16 +62,34 @@ class MyApp extends StatelessWidget {
         '/setting-page': (context) => SettingPage(),
         '/upload-resep': (context) => const UploadResep(),
         '/detail-resep': (context) => DetailResep(
-              recipe: sampleRecipe,
-            ),
+            idResep: 1, rating: 0.0, idUser: 1, username: "", imgUrl: ""),
         '/robusta-page': (context) => const RobustaPage(),
-        '/arabica-page': (context) => const ArabicaPage()
+        '/arabica-page': (context) => const ArabicaPage(),
+        '/edit-profil': (context) => EditProfil(
+              user: sampleUser,
+            ),
+        '/followers-list': (context) => FollowersList(idUser: 1),
+        '/request-reset': (context) => RequestReset(),
+        '/reset-kode': (context) => ResetKode(),
+        '/reset-password': (context) => ResetPassword(),
+        '/ganti-password': (context) => GantiPassword()
       }),
     );
   }
 }
 
+final sampleUser = Pengguna.User(
+    id: 0,
+    username: "username",
+    email: "email",
+    description: "description",
+    createdAt: DateTime.now(),
+    imgUrl:
+        "https://ohhqztwfnukcmlybgrqn.supabase.co/storage/v1/object/public/profile_pic/pfp_placeholder.jpg?t=2024-11-01T19%3A27%3A09.465Z");
+
 final sampleRecipe = Recipe(
+  id: 0,
+  idUser: 0,
   title: "Iced Coffee Latte",
   category: "Beverage",
   description:

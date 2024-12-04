@@ -16,6 +16,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool obscureText = true;
 
   @override
   Widget build(BuildContext context) {
@@ -55,15 +56,27 @@ class _LoginPageState extends State<LoginPage> {
             ),
             gapH4,
             TextField(
-              controller: usernameController,
-              decoration: InputDecoration(
-                  filled: true,
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kPrimaryColor),
-                  ),
-                  fillColor: kWhiteColor,
-                  hintText: "Masukkan username anda"),
-            ),
+                controller: usernameController,
+                onChanged: (value) {
+                  usernameController.value = usernameController.value.copyWith(
+                    text: value.toLowerCase(),
+                    selection: TextSelection.collapsed(offset: value.length),
+                  );
+                },
+                decoration: InputDecoration(
+                    filled: true,
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: kPrimaryColor),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide:
+                          BorderSide(color: kGreyColor.withOpacity(0.5)),
+                    ),
+                    fillColor: kWhiteColor,
+                    hintStyle: regularTextStyle.copyWith(
+                      color: kGreyColor,
+                    ),
+                    hintText: "Masukkan username anda")),
             gapH8,
             Text(
               "Password",
@@ -78,9 +91,43 @@ class _LoginPageState extends State<LoginPage> {
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: kPrimaryColor),
                   ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: kGreyColor.withOpacity(0.5)),
+                  ),
                   fillColor: kWhiteColor,
+                  hintStyle: regularTextStyle.copyWith(
+                    color: kGreyColor,
+                  ),
+                  suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: kGreyColor,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      }),
                   hintText: "Masukkan password anda"),
-              obscureText: true,
+              obscureText: obscureText,
+            ),
+            gapH4,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                RichText(
+                    text: TextSpan(
+                        style: mediumTextStyle.copyWith(),
+                        children: <TextSpan>[
+                      TextSpan(
+                          text: "Lupa Password",
+                          style: boldTextStyle.copyWith(color: kPrimaryColor),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.pushNamed(context, '/request-reset');
+                            })
+                    ])),
+              ],
             ),
             gapH24,
             Button(

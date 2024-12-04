@@ -1,3 +1,8 @@
+import 'package:coffee_vision/controller/storage_controller.dart';
+import 'package:coffee_vision/main.dart';
+import 'package:coffee_vision/model/user.dart';
+import 'package:coffee_vision/view/pages/followers_list.dart';
+import 'package:coffee_vision/view/pages/followings_list.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +15,44 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late Map<String, dynamic> user;
+  int followersCount = 0;
+  int followingCount = 0;
+  int resepCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    user = storageController.getData("user");
+    getCount();
+  }
+
+  Future<void> getCount() async {
+    final followersResponse = await supabase
+        .from("follows")
+        .select("*")
+        .eq("id_following", user['id'])
+        .count();
+
+    final followingResponse = await supabase
+        .from("follows")
+        .select("*")
+        .eq("id_follower", user['id'])
+        .count();
+
+    final resepResponse = await supabase
+        .from("resep")
+        .select("*")
+        .eq("id_user", user['id'])
+        .count();
+
+    setState(() {
+      followersCount = followersResponse.count;
+      followingCount = followingResponse.count;
+      resepCount = resepResponse.count;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,52 +85,143 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
                   CircleAvatar(
+                    backgroundColor: kSecondaryColor,
                     radius: 60,
-                    backgroundImage: AssetImage("assets/onboarding3.jpg"),
+                    backgroundImage:
+                        user['img_url'] != null && user['img_url'].isNotEmpty
+                            ? NetworkImage(user['img_url'])
+                            : AssetImage("assets/robusta.png"),
+                    onBackgroundImageError: (error, stackTrace) {},
                   ),
-                  gapH12,
-                  // User Name
+                  gapH(16),
                   Text(
-                    "User Test",
+                    user['username'],
                     style: blackTextStyle.copyWith(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  gapH8,
+                  gapH4,
+                  user['deskripsi'] == ""
+                      ? SizedBox.shrink()
+                      : Text(
+                          user['deskripsi'],
+                          style: regularTextStyle.copyWith(
+                            fontSize: 16,
+                          ),
+                        ),
+                  gapH(16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  FollowersList(idUser: user['id']),
+                            ),
+                          ).then((updated) {
+                            if (updated == true) {
+                              getCount();
+                            }
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            Text(
+                              "Followers",
+                              style: regularTextStyle.copyWith(
+                                color: kGreyColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                            gapH4,
+                            Text(
+                              followersCount.toString(),
+                              style: blackTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      gapW(16),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  FollowingsList(idUser: user['id']),
+                            ),
+                          ).then((updated) {
+                            if (updated == true) {
+                              getCount();
+                            }
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            Text(
+                              "Followings",
+                              style: regularTextStyle.copyWith(
+                                color: kGreyColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                            gapH4,
+                            Text(
+                              followingCount.toString(),
+                              style: blackTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      gapW(16),
+                      GestureDetector(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Resep",
+                              style: regularTextStyle.copyWith(
+                                color: kGreyColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                            gapH4,
+                            Text(
+                              resepCount.toString(),
+                              style: blackTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  gapH4,
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Resep",
-                  style: regularTextStyle.copyWith(
-                    color: kGreyColor,
-                    fontSize: 14,
-                  ),
-                ),
-                gapH4,
-                Text(
-                  "10",
-                  style: blackTextStyle.copyWith(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            gapH12,
+            gapH8,
+            gapH24,
             Text(
               "Resep buatanku nih!",
-              style: regularTextStyle.copyWith(
+              style: boldTextStyle.copyWith(
                 fontSize: 16,
               ),
             ),
             gapH4,
             Text(
-              "Menurutku enak sih, gimana menurutmu?",
+              "Cobain dulu, siapa tahu kamu suka!",
               style: regularTextStyle.copyWith(
                 fontSize: 14,
                 color: kGreyColor,
