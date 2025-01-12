@@ -82,7 +82,7 @@ class _EditProfilState extends State<EditProfil> {
     if (newUsername.isEmpty || newUsername == widget.user.username) return;
 
     final response =
-        await supabase.from("users").select("*").eq("username", newUsername);
+        await supabase.from("user").select("*").eq("username", newUsername);
 
     setState(() {
       isUsernameAvailable = response.isEmpty;

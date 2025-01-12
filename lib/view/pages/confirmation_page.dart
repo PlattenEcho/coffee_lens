@@ -124,7 +124,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   Future<void> cropImage(File imageFile) async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: imageFile.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
     );
 
     if (croppedFile != null) {

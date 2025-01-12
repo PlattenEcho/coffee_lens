@@ -1,4 +1,6 @@
 import 'package:coffee_vision/main.dart';
+import 'package:coffee_vision/model/resep.dart';
+import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/button.dart';
@@ -13,13 +15,96 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<Resep> reseps = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchResepHomePage();
+  }
+
+  Future<void> fetchResepHomePage() async {
+    try {
+      final response = await supabase
+          .from('resep')
+          .select('*, bahan(name, kuantitas), alat(name), langkah(langkah)')
+          .order('created_at', ascending: false);
+
+      if (response.isEmpty) {
+        setState(() {
+          reseps = [];
+        });
+        return;
+      }
+
+      List<Resep> fetchedReseps = (response as List).map((resepData) {
+        return Resep.fromJson(resepData);
+      }).toList();
+
+      List<Map<String, dynamic>> resepWithRatings = [];
+
+      for (var resep in fetchedReseps) {
+        final ratingsResponse = await supabase
+            .from('rating')
+            .select('rating')
+            .eq('id_resep', resep.id);
+
+        double averageRating = 0.0;
+        if (ratingsResponse.isNotEmpty) {
+          averageRating = ratingsResponse
+                  .map((r) => (r['rating'] as num).toDouble())
+                  .reduce((a, b) => a + b) /
+              ratingsResponse.length;
+        }
+        resep.rating = averageRating;
+
+        final userResponse = await supabase
+            .from('user')
+            .select('username, img_url')
+            .eq('id', resep.idUser)
+            .maybeSingle();
+
+        if (userResponse != null) {
+          resep.username = userResponse['username'];
+          resep.userImgUrl = userResponse['img_url'];
+        }
+
+        final ratingsCountResponse =
+            await supabase.from('rating').select('id').eq('id_resep', resep.id);
+
+        int ratingCount = ratingsCountResponse.length;
+
+        resepWithRatings.add({
+          'resep': resep,
+          'ratingCount': ratingCount,
+        });
+      }
+
+      resepWithRatings
+          .sort((a, b) => b['ratingCount'].compareTo(a['ratingCount']));
+
+      List<Resep> topReseps = resepWithRatings
+          .take(2)
+          .map((item) => item['resep'] as Resep)
+          .toList();
+
+      setState(() {
+        reseps = topReseps;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching home page reseps: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kPrimaryLightColor,
       appBar: AppBar(
           title: Text(
-            "Welcome to Brew Lens!",
+            "Welcome to Coffee Lens!",
             style: blackTextStyle.copyWith(fontSize: 24),
           ),
           backgroundColor: kPrimaryLightColor,
@@ -45,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Coba Brew Lens AI!",
+                          "Coba Coffee Lens AI!",
                           style: boldTextStyle.copyWith(
                               color: kWhiteColor, fontSize: 18),
                         ),
@@ -63,10 +148,8 @@ class _HomePageState extends State<HomePage> {
                             ),
                             elevation: 0,
                           ),
-                          onPressed: () async {
-                            await supabase
-                                .from('test')
-                                .insert({'test': 'The Shire'});
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/camera-page');
                           },
                           child: Text(
                             "Klik Disini!",
@@ -137,9 +220,52 @@ class _HomePageState extends State<HomePage> {
               style: regularTextStyle.copyWith(fontSize: 14, color: kGreyColor),
             ),
             gapH8,
-            // Row(
-            //   children: [ResepCard(), gapW12, ResepCard()],
-            // ),
+            isLoading == true
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: kPrimaryColor,
+                    ),
+                  )
+                : GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: reseps.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 0.67,
+                    ),
+                    itemBuilder: (context, index) {
+                      final resep = reseps[index];
+
+                      return ResepCard(
+                        title: resep.title,
+                        category: resep.category,
+                        idResep: resep.id,
+                        imgUrl: resep.imageUrl,
+                        rating: resep.rating,
+                        idUser: resep.idUser,
+                        userImgUrl: resep.userImgUrl ?? "",
+                        username: resep.username ?? "",
+                        createdAt: resep.createdAt,
+                        onClick: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailResep(
+                                idResep: resep.id,
+                                rating: resep.rating,
+                                idUser: resep.idUser,
+                                imgUrl: resep.imageUrl,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
             gapH(80)
           ],
         ),

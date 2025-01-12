@@ -1,3 +1,4 @@
+import 'package:coffee_vision/controller/storage_controller.dart';
 import 'package:coffee_vision/main.dart';
 import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/pages/other_profile.dart';
@@ -5,7 +6,7 @@ import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:flutter/material.dart';
 
-class ResepCard extends StatefulWidget {
+class ResepCard extends StatelessWidget {
   final int idUser;
   final String username;
   final String userImgUrl;
@@ -14,95 +15,99 @@ class ResepCard extends StatefulWidget {
   final String title;
   final String category;
   final double rating;
+  final DateTime createdAt;
+  final VoidCallback onClick;
 
-  const ResepCard(
-      {super.key,
-      required this.imgUrl,
-      required this.userImgUrl,
-      required this.username,
-      required this.title,
-      required this.category,
-      required this.rating,
-      required this.idUser,
-      required this.idResep});
+  const ResepCard({
+    super.key,
+    required this.imgUrl,
+    required this.userImgUrl,
+    required this.username,
+    required this.title,
+    required this.category,
+    required this.rating,
+    required this.idUser,
+    required this.idResep,
+    required this.createdAt,
+    required this.onClick,
+  });
 
-  @override
-  State<ResepCard> createState() => _ResepCardState();
-}
+  String getTimeAgo() {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
 
-class _ResepCardState extends State<ResepCard> {
-  bool isFavorite = false;
-  int? userId;
-
-  @override
-  void initState() {
-    super.initState();
-    checkFavoriteStatus();
-  }
-
-  void checkFavoriteStatus() async {
-    if (userId == null) return;
-    final response = await supabase
-        .from('favorit')
-        .select()
-        .eq('id_resep', widget.idResep)
-        .eq('id_user', userId!);
-
-    setState(() {
-      isFavorite = response.isNotEmpty;
-    });
-  }
-
-  void toggleFavorite() async {
-    if (userId == null) return;
-
-    if (isFavorite) {
-      await supabase
-          .from('favorit')
-          .delete()
-          .eq('id_resep', widget.idResep)
-          .eq('id_user', userId!);
+    if (difference.inDays >= 30) {
+      final months = difference.inDays ~/ 30;
+      return '$months bulan${months > 1 ? ' yang' : ''} lalu';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} hari${difference.inDays > 1 ? ' yang' : ''} lalu';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} jam${difference.inHours > 1 ? ' yang' : ''} lalu';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} menit${difference.inMinutes > 1 ? ' yang' : ''} lalu';
     } else {
-      await supabase.from('favorit').insert({
-        'id_resep': widget.idResep,
-        'id_user': userId,
-      });
+      return 'Baru saja';
     }
-    setState(() {
-      isFavorite = !isFavorite;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => DetailResep(
-                  idResep: widget.idResep,
-                  rating: widget.rating,
-                  idUser: 1,
-                  username: "username",
-                  imgUrl: "imgUrl")),
-        );
-      },
+      onTap: onClick,
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
         decoration: BoxDecoration(
-            color: kWhiteColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: kPrimaryLight2Color, width: 1.5)),
+          color: kWhiteColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: kPrimaryLight2Color, width: 1.5),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            gapH12,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundImage: userImgUrl.isNotEmpty
+                          ? NetworkImage(userImgUrl)
+                          : AssetImage("assets/pfp_placeholder.jpg")
+                              as ImageProvider,
+                      onBackgroundImageError: (error, stackTrace) {},
+                    ),
+                    gapW8,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          username,
+                          style: boldTextStyle.copyWith(fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        Text(
+                          getTimeAgo(),
+                          style: regularTextStyle.copyWith(
+                            color: kGreyColor,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            gapH8,
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: Image.network(
-                    widget.imgUrl,
+                    imgUrl,
                     height: 150,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -135,7 +140,7 @@ class _ResepCardState extends State<ResepCard> {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          widget.rating.toString(),
+                          rating.toString(),
                           style: extraBoldTextStyle.copyWith(
                             color: kWhiteColor,
                           ),
@@ -147,50 +152,25 @@ class _ResepCardState extends State<ResepCard> {
               ],
             ),
             gapH8,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.title,
-                        style: blackTextStyle.copyWith(
-                          fontSize: 16,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      Text(
-                        widget.category,
-                        style: regularTextStyle.copyWith(
-                          color: kGreyColor,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: blackTextStyle.copyWith(fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                ),
-                GestureDetector(
-                  onTap: toggleFavorite,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: kSecondary2Color,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.all(8),
-                    child: Image.asset(
-                      isFavorite
-                          ? "assets/icon/icon_favorit_filled.png"
-                          : "assets/icon/icon_favorit.png",
-                      width: 20,
-                      height: 20,
-                      color: kWhiteColor,
+                  Text(
+                    category,
+                    style: regularTextStyle.copyWith(
+                      color: kGreyColor,
+                      fontSize: 14,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

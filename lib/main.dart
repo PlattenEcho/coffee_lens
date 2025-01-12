@@ -1,18 +1,22 @@
 import 'package:coffee_vision/controller/cubit.dart';
 import 'package:coffee_vision/controller/storage_controller.dart';
-import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/model/resep.dart';
 import 'package:coffee_vision/view/pages/arabica_page.dart';
 import 'package:coffee_vision/view/pages/auth_page.dart';
 import 'package:coffee_vision/view/pages/camera_page.dart';
 import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/pages/edit_profil.dart';
+import 'package:coffee_vision/view/pages/favorit_page.dart';
 import 'package:coffee_vision/view/pages/followers_list.dart';
 import 'package:coffee_vision/view/pages/ganti_password.dart';
 import 'package:coffee_vision/view/pages/login_page.dart';
 import 'package:coffee_vision/view/pages/main_page.dart';
 import 'package:coffee_vision/view/pages/onboarding.dart';
+import 'package:coffee_vision/view/pages/other_profile.dart';
+import 'package:coffee_vision/view/pages/profile_page.dart';
 import 'package:coffee_vision/view/pages/register_page.dart';
 import 'package:coffee_vision/view/pages/request_reset.dart';
+import 'package:coffee_vision/view/pages/resep_page.dart';
 import 'package:coffee_vision/view/pages/reset_kode.dart';
 import 'package:coffee_vision/view/pages/reset_password.dart';
 import 'package:coffee_vision/view/pages/robusta_page.dart';
@@ -61,8 +65,8 @@ class MyApp extends StatelessWidget {
         '/camera-page': (context) => CameraPage(),
         '/setting-page': (context) => SettingPage(),
         '/upload-resep': (context) => const UploadResep(),
-        '/detail-resep': (context) => DetailResep(
-            idResep: 1, rating: 0.0, idUser: 1, username: "", imgUrl: ""),
+        '/detail-resep': (context) =>
+            DetailResep(idResep: 1, rating: 0.0, idUser: 1, imgUrl: ""),
         '/robusta-page': (context) => const RobustaPage(),
         '/arabica-page': (context) => const ArabicaPage(),
         '/edit-profil': (context) => EditProfil(
@@ -72,7 +76,11 @@ class MyApp extends StatelessWidget {
         '/request-reset': (context) => RequestReset(),
         '/reset-kode': (context) => ResetKode(),
         '/reset-password': (context) => ResetPassword(),
-        '/ganti-password': (context) => GantiPassword()
+        '/ganti-password': (context) => GantiPassword(),
+        '/profile-page': (context) => ProfilePage(),
+        '/other-profile': (context) => OtherProfile(idUser: 1),
+        '/resep-page': (context) => ResepPage(),
+        '/favorit-page': (context) => FavoritPage()
       }),
     );
   }
@@ -87,27 +95,27 @@ final sampleUser = Pengguna.User(
     imgUrl:
         "https://ohhqztwfnukcmlybgrqn.supabase.co/storage/v1/object/public/profile_pic/pfp_placeholder.jpg?t=2024-11-01T19%3A27%3A09.465Z");
 
-final sampleRecipe = Recipe(
-  id: 0,
-  idUser: 0,
-  title: "Iced Coffee Latte",
-  category: "Beverage",
-  description:
-      "A refreshing iced coffee latte with a creamy and smooth texture.",
-  duration: "10 mins",
-  rating: 4.5,
-  imageUrl: "assets/onboarding1.jpg",
-  tools: ["Blender", "Measuring Cup", "Glass"],
-  ingredients: [
-    Ingredient(name: "Coffee", quantity: "2 tablespoons"),
-    Ingredient(name: "Milk", quantity: "1 cup"),
-    Ingredient(name: "Ice Cubes", quantity: "1 cup"),
-    Ingredient(name: "Sugar", quantity: "1 teaspoon"),
-  ],
-  steps: [
-    "Brew the coffee and let it cool.",
-    "Add milk, coffee, ice, and sugar to the blender.",
-    "Blend until smooth.",
-    "Pour into a glass and enjoy your iced coffee latte!",
-  ],
-);
+final sampleResep = Resep(
+    id: 0,
+    idUser: 0,
+    title: "Iced Coffee Latte",
+    category: "Beverage",
+    description:
+        "A refreshing iced coffee latte with a creamy and smooth texture.",
+    duration: "10 mins",
+    rating: 4.5,
+    imageUrl: "assets/onboarding1.jpg",
+    tools: ["Blender", "Measuring Cup", "Glass"],
+    ingredients: [
+      Ingredient(name: "Coffee", quantity: "2 tablespoons"),
+      Ingredient(name: "Milk", quantity: "1 cup"),
+      Ingredient(name: "Ice Cubes", quantity: "1 cup"),
+      Ingredient(name: "Sugar", quantity: "1 teaspoon"),
+    ],
+    steps: [
+      "Brew the coffee and let it cool.",
+      "Add milk, coffee, ice, and sugar to the blender.",
+      "Blend until smooth.",
+      "Pour into a glass and enjoy your iced coffee latte!",
+    ],
+    createdAt: DateTime.now());

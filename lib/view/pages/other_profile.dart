@@ -1,11 +1,14 @@
+import 'package:coffee_vision/controller/resep_controller.dart';
 import 'package:coffee_vision/controller/storage_controller.dart';
 import 'package:coffee_vision/main.dart';
-import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/model/resep.dart';
 import 'package:coffee_vision/model/user.dart';
+import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/pages/followers_list.dart';
 import 'package:coffee_vision/view/pages/followings_list.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
+import 'package:coffee_vision/view/widgets/card.dart';
 import 'package:flutter/material.dart';
 
 class OtherProfile extends StatefulWidget {
@@ -24,19 +27,20 @@ class _OtherProfileState extends State<OtherProfile> {
   int followersCount = 0;
   int followingCount = 0;
   int resepCount = 0;
-  List<Recipe> recipes = [];
+  late Future<List<Resep>>? fetchUserResepFuture;
+  List<Resep> reseps = [];
 
   @override
   void initState() {
     super.initState();
     signedUser = User.fromMap(storageController.getData("user"));
     setFollowStatus();
-    getUser();
+    getUserData();
   }
 
   Future<void> setFollowStatus() async {
     final response = await supabase
-        .from("follows")
+        .from("follow")
         .select("*")
         .eq("id_following", widget.idUser)
         .eq("id_follower", signedUser!.id);
@@ -51,7 +55,7 @@ class _OtherProfileState extends State<OtherProfile> {
   }
 
   Future<void> follow() async {
-    final response = await supabase.from("follows").insert({
+    await supabase.from("follow").insert({
       'id_following': widget.idUser,
       'id_follower': signedUser!.id,
     });
@@ -64,8 +68,8 @@ class _OtherProfileState extends State<OtherProfile> {
   }
 
   Future<void> unFollow() async {
-    final response = await supabase
-        .from("follows")
+    await supabase
+        .from("follow")
         .delete()
         .eq("id_following", widget.idUser)
         .eq("id_follower", signedUser!.id);
@@ -77,9 +81,9 @@ class _OtherProfileState extends State<OtherProfile> {
     });
   }
 
-  Future<void> getUser() async {
+  Future<void> getUserData() async {
     final userResponse = await supabase
-        .from("users")
+        .from("user")
         .select("*")
         .eq("id", widget.idUser)
         .single();
@@ -88,20 +92,20 @@ class _OtherProfileState extends State<OtherProfile> {
         await supabase.from("resep").select("*").eq("id_user", widget.idUser);
 
     final followersResponse = await supabase
-        .from("follows")
+        .from("follow")
         .select("*")
         .eq("id_following", widget.idUser)
         .count();
 
     final followingResponse = await supabase
-        .from("follows")
+        .from("follow")
         .select("*")
         .eq("id_follower", widget.idUser)
         .count();
 
     setState(() {
-      recipes = (resepResponse as List).map((recipeData) {
-        return Recipe.fromJson(recipeData);
+      reseps = (resepResponse as List).map((resepData) {
+        return Resep.fromJson(resepData);
       }).toList();
 
       user = User.fromMap(userResponse);
@@ -109,7 +113,21 @@ class _OtherProfileState extends State<OtherProfile> {
       followersCount = followersResponse.count;
       followingCount = followingResponse.count;
       resepCount = resepResponse.length;
+      fetchUserResepFuture = fetchUserReseps(user!.id);
     });
+  }
+
+  void refreshResepData(int idUser) async {
+    setState(() {
+      fetchUserResepFuture = fetchUserReseps(idUser);
+    });
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   @override
@@ -307,7 +325,73 @@ class _OtherProfileState extends State<OtherProfile> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    gapH(80),
+                    gapH(16),
+                    FutureBuilder<List<Resep>>(
+                      future: fetchUserResepFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                              child: CircularProgressIndicator(
+                            color: kPrimaryColor,
+                          ));
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text("Error: ${snapshot.error}"));
+                        } else if (snapshot.hasData &&
+                            snapshot.data!.isNotEmpty) {
+                          List<Resep> resepList = snapshot.data!;
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: resepList.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                              childAspectRatio: 0.67,
+                            ),
+                            itemBuilder: (context, index) {
+                              final resep = resepList[index];
+                              return ResepCard(
+                                idResep: resep.id,
+                                title: resep.title,
+                                category: resep.category,
+                                imgUrl: resep.imageUrl,
+                                rating: resep.rating,
+                                idUser: user!.id,
+                                username: user!.username,
+                                userImgUrl: user!.imgUrl,
+                                createdAt: resep.createdAt,
+                                onClick: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DetailResep(
+                                        idResep: resep.id,
+                                        rating: resep.rating,
+                                        idUser: resep.idUser,
+                                        imgUrl: resep.imageUrl,
+                                      ),
+                                    ),
+                                  ).then((isUpdated) {
+                                    if (isUpdated == true) {
+                                      refreshResepData(user!.id);
+                                    }
+                                  });
+                                  ;
+                                },
+                              );
+                            },
+                          );
+                        } else {
+                          return Center(
+                              child: Text("Tidak ada resep yang tersedia"));
+                        }
+                      },
+                    ),
+                    gapH(80)
                   ],
                 ),
               ),

@@ -23,26 +23,11 @@ class _ResepPageState extends State<ResepPage> {
   final List<String> sortOptions = ["Most Popular", "Highest Rated", "Newest"];
   late Future<List<Resep>>? fetchResepFuture;
 
-  int pageSize = 4;
-  int currentPage = 1;
-  bool isLoadingMore = false;
-  bool hasMoreData = true;
-  List<Resep> loadedReseps = [];
-  final ScrollController scrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
     try {
       fetchResepFuture = getSortedAndFilteredReseps();
-      scrollController.addListener(() {
-        if (scrollController.position.pixels >=
-                scrollController.position.maxScrollExtent - 200 &&
-            !isLoadingMore &&
-            hasMoreData) {
-          loadMoreData();
-        }
-      });
     } catch (e) {
       showToast(context, "Error: ${{e.toString()}}");
     }
@@ -50,41 +35,17 @@ class _ResepPageState extends State<ResepPage> {
 
   @override
   void dispose() {
-    scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> loadMoreData() async {
-    setState(() {
-      isLoadingMore = true;
-    });
-
-    currentPage++;
-
-    final newReseps = await fetchReseps(currentPage);
-
-    if (newReseps.isEmpty) {
-      hasMoreData = false;
-    }
-
-    setState(() {
-      loadedReseps.addAll(newReseps);
-      isLoadingMore = false;
-    });
-  }
-
-  Future<List<Resep>> fetchReseps(int page) async {
-    final start = (page - 1) * pageSize;
-
+  Future<List<Resep>> fetchReseps() async {
     final response = await supabase
         .from('resep')
         .select('*, bahan(name, kuantitas), alat(name), langkah(langkah)')
-        .range(start, start + pageSize - 1)
         .order("created_at", ascending: false);
 
     if (response.isEmpty) {
-      hasMoreData = false;
-      return [];
+      setState(() {});
     }
 
     List<Resep> reseps = (response as List).map((resepData) {
@@ -171,22 +132,9 @@ class _ResepPageState extends State<ResepPage> {
   }
 
   Future<List<Resep>> getSortedAndFilteredReseps() async {
-    // Ambil data dari server dengan pagination
-    final newReseps = await fetchReseps(currentPage);
-
-    if (newReseps.isEmpty) {
-      return loadedReseps;
-    }
-
-    loadedReseps.addAll(newReseps);
-
-    // Terapkan filter
-    final filteredReseps = applyFilters(loadedReseps);
-
-    // Terapkan sorting
-    final sortedReseps = await applySorting(filteredReseps);
-
-    return sortedReseps;
+    final reseps = await fetchReseps();
+    final filteredReseps = applyFilters(reseps);
+    return await applySorting(filteredReseps);
   }
 
   Future<List<Map<String, dynamic>>> fetchRatings(int resepId) async {
@@ -300,11 +248,11 @@ class _ResepPageState extends State<ResepPage> {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(child: Text("No resep found"));
                 } else {
+                  final reseps = snapshot.data!;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    controller: scrollController,
-                    itemCount: snapshot.data!.length + 1,
+                    itemCount: reseps.length,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
@@ -313,37 +261,38 @@ class _ResepPageState extends State<ResepPage> {
                       childAspectRatio: 0.67,
                     ),
                     itemBuilder: (context, index) {
-                      if (index < snapshot.data!.length) {
-                        final resep = snapshot.data![index];
-                        return ResepCard(
-                          title: resep.title,
-                          category: resep.category,
-                          idResep: resep.id,
-                          imgUrl: resep.imageUrl,
-                          rating: resep.rating,
-                          idUser: resep.idUser,
-                          userImgUrl: resep.userImgUrl ?? "",
-                          username: resep.username ?? "",
-                          createdAt: resep.createdAt,
-                          onClick: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetailResep(
-                                  idResep: resep.id,
-                                  rating: resep.rating,
-                                  idUser: resep.idUser,
-                                  imgUrl: resep.imageUrl,
-                                ),
+                      final resep = reseps[index];
+                      return ResepCard(
+                        title: resep.title,
+                        category: resep.category,
+                        idResep: resep.id,
+                        imgUrl: resep.imageUrl,
+                        rating: resep.rating,
+                        idUser: resep.idUser,
+                        userImgUrl: resep.userImgUrl ?? "",
+                        username: resep.username ?? "",
+                        createdAt: resep.createdAt,
+                        onClick: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailResep(
+                                idResep: resep.id,
+                                rating: resep.rating,
+                                idUser: resep.idUser,
+                                imgUrl: resep.imageUrl,
                               ),
-                            );
-                          },
-                        );
-                      } else {
-                        return isLoadingMore
-                            ? const Center(child: CircularProgressIndicator())
-                            : const SizedBox.shrink();
-                      }
+                            ),
+                          ).then((isUpdated) {
+                            if (isUpdated == true) {
+                              setState(() {
+                                fetchResepFuture = getSortedAndFilteredReseps();
+                              });
+                            }
+                          });
+                          ;
+                        },
+                      );
                     },
                   );
                 }

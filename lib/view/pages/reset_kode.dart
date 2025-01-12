@@ -108,13 +108,14 @@ class ResetKode extends StatelessWidget {
                     showToast(context, "Masih ada kolom yang kurang tepat");
                   } else {
                     if (isOtpValid(otpController.text.trim())) {
+                      Navigator.pop(context);
                       Navigator.pushNamed(context, '/reset-password');
                       showToast(context, "Kode OTP berhasil diverifikasi");
                     } else {
+                      Navigator.pop(context);
                       showToast(context, "Kode OTP salah");
                     }
                   }
-                  Navigator.pop(context);
                 },
               ),
             ],

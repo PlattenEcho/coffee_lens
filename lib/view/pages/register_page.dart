@@ -49,11 +49,11 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               gapH12,
-              Text("Masuk untuk Melanjutkan",
+              Text("Daftar Akun Baru",
                   style: boldTextStyle.copyWith(fontSize: 28)),
               gapH(8),
               Text(
-                "Masuk menggunakan username atau buat akun",
+                "Masukkan username, email, dan kata sandi kamu untuk membuat akun baru",
                 style: whiteTextStyle.copyWith(
                   color: kGreyColor,
                   fontWeight: light,

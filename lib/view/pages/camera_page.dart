@@ -3,7 +3,7 @@ import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'confirmation_page.dart'; // Ganti dengan path dari halaman konfirmasi
+import 'confirmation_page.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -24,9 +24,14 @@ class _CameraPageState extends State<CameraPage> {
 
   Future<void> initializeCamera() async {
     cameras = await availableCameras();
+    final backCamera = cameras.firstWhere(
+        (camera) => camera.lensDirection == CameraLensDirection.back,
+        orElse: () => cameras.first);
+
     cameraController = CameraController(
-      cameras.first,
+      backCamera,
       ResolutionPreset.medium,
+      enableAudio: false,
     );
 
     await cameraController?.initialize();
@@ -57,7 +62,7 @@ class _CameraPageState extends State<CameraPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Coba Brew Lens AI!",
+              "Coba Coffee Lens AI!",
               style: blackTextStyle.copyWith(fontSize: 24),
             ),
             Text(
@@ -142,7 +147,6 @@ class _CameraPageState extends State<CameraPage> {
                     color: kWhiteColor,
                   ),
                 ),
-                // Tombol gallery
                 RawMaterialButton(
                   onPressed: () async {
                     final pickedFile =

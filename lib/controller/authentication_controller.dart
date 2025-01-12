@@ -12,7 +12,7 @@ import 'package:get/get_core/src/get_main.dart';
 
 Future<bool> checkUsernameExists(String username) async {
   final response = await supabase
-      .from('users')
+      .from('user')
       .select('username')
       .eq('username', username)
       .limit(1);
@@ -22,7 +22,7 @@ Future<bool> checkUsernameExists(String username) async {
 
 Future<bool> checkEmailExists(String email) async {
   final response =
-      await supabase.from('users').select('email').eq('email', email).limit(1);
+      await supabase.from('user').select('email').eq('email', email).limit(1);
 
   return response.isNotEmpty;
 }
@@ -62,7 +62,7 @@ Future<void> createUser(BuildContext context, String email, String username,
     }
 
     String encryptedPassword = encryptMyData(password);
-    await supabase.from('users').insert({
+    await supabase.from('user').insert({
       'username': username,
       'email': email,
       'password': encryptedPassword,
@@ -93,7 +93,7 @@ Future<void> authenticateUser(
 
   try {
     final response = await supabase
-        .from('users')
+        .from('user')
         .select('id, username, email, password, created_at, img_url, deskripsi')
         .eq('username', username)
         .limit(1)

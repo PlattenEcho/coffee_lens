@@ -32,7 +32,9 @@ class RequestReset extends StatelessWidget {
     const serviceId = 'service_ahbkxr3';
     const templateId = 'template_netnhzi';
     const publicKey = '2hft_x0xy_splaub9';
-    final otp = generateOtp();
+    final random = Random();
+
+    final otp = (random.nextInt(900000) + 100000).toString();
     final otpExpiryTime =
         DateTime.now().add(Duration(minutes: 6)).toIso8601String();
     storageController.saveData("otpData", {
@@ -133,34 +135,40 @@ class RequestReset extends StatelessWidget {
                           showToast(
                               context, "Masih ada kolom yang kurang tepat");
                         } else {
+                          final data = storageController.getData("otpData");
                           try {
-                            if (DateTime.now().isAfter(DateTime.parse(
-                                storageController
-                                    .getData("otpData")['expiry']))) {
+                            if (data == null ||
+                                DateTime.now()
+                                    .isAfter(DateTime.parse(data['expiry']))) {
                               final email = emailController.text.trim();
                               final response = await supabase
-                                  .from('users')
+                                  .from('user')
                                   .select('username')
                                   .eq('email', email)
                                   .limit(1)
                                   .maybeSingle();
                               if (response != null) {
                                 sendOtpEmail(response['username'], email);
+                                Navigator.pop(context);
                                 Navigator.pushNamed(context, '/reset-kode');
                                 showToast(context,
                                     "Kode OTP berhasil dikirim via Email, silahkan dicek");
                               } else {
+                                Navigator.pop(context);
                                 showToast(context, "Email tidak terdaftar");
                               }
                             } else {
+                              Navigator.pop(context);
                               showToast(context,
                                   "Kode OTP sudah dikirimkan, tunggu 6 menit untuk kode baru");
                             }
                           } catch (e) {
+                            Navigator.pop(context);
                             print('Error: ${e.toString()}');
+                            showToast(
+                                context, "Terjadi kesalahan, coba lagi nanti");
                           }
                         }
-                        Navigator.pop(context);
                       },
                     ),
                   ])),

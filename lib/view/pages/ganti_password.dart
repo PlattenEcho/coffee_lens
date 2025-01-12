@@ -28,7 +28,7 @@ class GantiPassword extends StatelessWidget {
     final user = User.fromMap(storageController.getData("user"));
     String encryptedPassword = encryptMyData(password);
     await supabase
-        .from('users')
+        .from('user')
         .update({'password': encryptedPassword}).eq('username', user.username);
   }
 
@@ -40,7 +40,7 @@ class GantiPassword extends StatelessWidget {
         iconTheme: IconThemeData(color: kTextColor),
         backgroundColor: kPrimaryLightColor,
         title: Text(
-          "Ubah Password",
+          "Ganti Password",
           style: blackTextStyle.copyWith(fontWeight: bold),
         ),
       ),
@@ -154,7 +154,7 @@ class GantiPassword extends StatelessWidget {
                       final user =
                           User.fromMap(storageController.getData("user"));
                       final response = await supabase
-                          .from('users')
+                          .from('user')
                           .select('password')
                           .eq('username', user.username)
                           .single();

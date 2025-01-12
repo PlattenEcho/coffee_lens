@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:coffee_vision/model/user.dart';
+import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:flutter/material.dart';
-import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/model/resep.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/card.dart';
 import 'package:coffee_vision/main.dart';
@@ -15,75 +18,111 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   String searchQuery = '';
-  List<Recipe> recipes = [];
-  List<User> users = [];
-  List<Recipe> filteredRecipes = [];
-  List<User> filteredUsers = [];
+  List<Resep> resep = [];
+  List<User> user = [];
 
+  Timer? debounce;
   @override
   void initState() {
     super.initState();
-    fetchRecipes();
-    fetchUsers();
   }
 
-  Future<void> fetchRecipes() async {
+  Future<void> fetchReseps(String keyword) async {
     try {
       final response = await supabase
           .from('resep')
-          .select('*, bahan(name, kuantitas), alat(name), langkah(langkah)');
+          .select('*, bahan(name, kuantitas), alat(name), langkah(langkah)')
+          .ilike('title', '%$keyword%');
+
+      if (response.isEmpty) {
+        setState(() {
+          resep = [];
+        });
+        return;
+      }
+
+      List<Resep> reseps = (response as List).map((resepData) {
+        return Resep.fromJson(resepData);
+      }).toList();
+
+      for (var resep in reseps) {
+        final ratings = await supabase
+            .from('rating')
+            .select('rating')
+            .eq('id_resep', resep.id);
+        double averageRating = 0.0;
+        if (ratings.isNotEmpty) {
+          averageRating = ratings
+                  .map((r) => (r['rating'] as num).toDouble())
+                  .reduce((a, b) => a + b) /
+              ratings.length;
+        }
+        resep.rating = averageRating;
+
+        final userResponse = await supabase
+            .from('user')
+            .select('username, img_url')
+            .eq('id', resep.idUser)
+            .maybeSingle();
+
+        if (userResponse != null) {
+          resep.username = userResponse['username'];
+          resep.userImgUrl = userResponse['img_url'];
+        }
+      }
 
       setState(() {
-        recipes = (response as List).map((recipeData) {
-          return Recipe.fromJson(recipeData);
-        }).toList();
+        resep = reseps;
       });
     } catch (e) {
-      print(e.toString());
+      print("Error fetching reseps: $e");
     }
   }
 
-  Future<void> fetchUsers() async {
+  Future<void> fetchUsers(String keyword) async {
     try {
       final response = await supabase
-          .from('users')
-          .select('id, username, email, created_at, deskripsi, img_url');
-
-      print(
-          "Response from users table: $response"); // Debug: tampilkan data mentah dari response
+          .from('user')
+          .select('id, username, email, created_at, deskripsi, img_url')
+          .ilike('username', '%$keyword%');
 
       setState(() {
-        users = (response as List).map((userData) {
+        user = (response as List).map((userData) {
           return User.fromMap(userData);
         }).toList();
       });
-
-      print(
-          "Parsed users list: $users"); // Debug: tampilkan daftar pengguna yang sudah di-parse
     } catch (e) {
-      print(
-          "Error fetching users: $e"); // Debug: tampilkan error jika gagal mengambil data
+      print("Error fetching user: $e");
     }
   }
 
   void applySearchFilter() {
-    setState(() {
-      filteredRecipes = searchQuery.isNotEmpty
-          ? recipes.where((recipe) {
-              return recipe.title
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase());
-            }).toList()
-          : [];
+    if (searchQuery.isNotEmpty) {
+      fetchReseps(searchQuery);
+      fetchUsers(searchQuery);
+    } else {
+      setState(() {
+        resep = [];
+        user = [];
+      });
+    }
+  }
 
-      filteredUsers = searchQuery.isNotEmpty
-          ? users.where((user) {
-              return user.username
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase());
-            }).toList()
-          : [];
+  void applySearchFilterWithDebounce(String value) {
+    if (debounce?.isActive ?? false) debounce?.cancel();
+
+    debounce = Timer(Duration(milliseconds: 300), () {
+      setState(() {
+        searchQuery = value;
+      });
+      applySearchFilter();
     });
+  }
+
+  @override
+  void dispose() {
+    debounce?.cancel();
+    super.dispose();
   }
 
   @override
@@ -105,8 +144,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
           onChanged: (value) {
-            searchQuery = value;
-            applySearchFilter();
+            applySearchFilterWithDebounce(value);
           },
         ),
         iconTheme: IconThemeData(color: kBlackColor),
@@ -131,7 +169,7 @@ class _SearchPageState extends State<SearchPage> {
               padding: EdgeInsets.all(20),
               child: Column(
                 children: [
-                  filteredUsers.isNotEmpty
+                  user.isNotEmpty
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -144,15 +182,15 @@ class _SearchPageState extends State<SearchPage> {
                               height: 120,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                itemCount: filteredUsers.length,
+                                itemCount: user.length,
                                 itemBuilder: (context, index) {
-                                  final user = filteredUsers[index];
+                                  final pengguna = user[index];
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8.0),
                                     child: ProfileCard2(
-                                      idUser: user.id,
-                                      username: user.username,
-                                      imgUrl: user.imgUrl,
+                                      idUser: pengguna.id,
+                                      username: pengguna.username,
+                                      imgUrl: pengguna.imgUrl,
                                     ),
                                   );
                                 },
@@ -162,7 +200,7 @@ class _SearchPageState extends State<SearchPage> {
                         )
                       : SizedBox.shrink(),
                   gapH12,
-                  filteredRecipes.isNotEmpty
+                  resep.isNotEmpty
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -174,31 +212,45 @@ class _SearchPageState extends State<SearchPage> {
                             GridView.builder(
                               shrinkWrap: true,
                               physics: NeverScrollableScrollPhysics(),
-                              itemCount: filteredRecipes.length,
+                              itemCount: resep.length,
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 8,
                                 mainAxisSpacing: 8,
-                                childAspectRatio: 0.76,
+                                childAspectRatio: 0.65,
                               ),
                               itemBuilder: (context, index) {
-                                final recipe = filteredRecipes[index];
+                                final recipe = resep[index];
                                 return ResepCard(
                                   title: recipe.title,
                                   category: recipe.category,
                                   idResep: recipe.id,
                                   imgUrl: recipe.imageUrl,
-                                  rating: 0,
+                                  rating: recipe.rating,
                                   idUser: recipe.idUser,
-                                  userImgUrl: "",
-                                  username: "aaaa",
+                                  userImgUrl: recipe.userImgUrl ?? "",
+                                  username: recipe.username ?? "",
+                                  createdAt: recipe.createdAt,
+                                  onClick: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailResep(
+                                          idResep: recipe.id,
+                                          rating: recipe.rating,
+                                          idUser: recipe.idUser,
+                                          imgUrl: recipe.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             ),
                           ],
                         )
-                      : filteredRecipes.isEmpty && filteredUsers.isEmpty
+                      : resep.isEmpty && user.isEmpty
                           ? Center(
                               child: Text(
                                 "Tidak ditemukan",

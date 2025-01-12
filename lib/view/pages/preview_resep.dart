@@ -1,19 +1,15 @@
 import 'dart:io';
 
-import 'package:coffee_vision/controller/storage_controller.dart';
-import 'package:coffee_vision/main.dart';
-import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/model/resep.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/card.dart';
-import 'package:coffee_vision/view/widgets/toast.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class PreviewResep extends StatelessWidget {
-  final Recipe recipe;
+  final Resep resep;
 
-  const PreviewResep({super.key, required this.recipe});
+  const PreviewResep({super.key, required this.resep});
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +25,9 @@ class PreviewResep extends StatelessWidget {
             backgroundColor: kPrimaryLight2Color,
             elevation: 0.0,
             flexibleSpace: FlexibleSpaceBar(
-                background: recipe.imageUrl.startsWith('http')
-                    ? Image.network(recipe.imageUrl, fit: BoxFit.cover)
-                    : Image.file(File(recipe.imageUrl), fit: BoxFit.cover)),
+                background: resep.imageUrl.startsWith('http')
+                    ? Image.network(resep.imageUrl, fit: BoxFit.cover)
+                    : Image.file(File(resep.imageUrl), fit: BoxFit.cover)),
             leading: IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -67,7 +63,7 @@ class PreviewResep extends StatelessWidget {
                     ),
                     gapH12,
                     Text(
-                      recipe.category,
+                      resep.category,
                       style: mediumTextStyle.copyWith(
                         color: kGreyColor,
                         fontSize: 16,
@@ -75,7 +71,7 @@ class PreviewResep extends StatelessWidget {
                     ),
                     gapH4,
                     Text(
-                      recipe.title,
+                      resep.title,
                       style: blackTextStyle.copyWith(fontSize: 28),
                     ),
                     gapH8,
@@ -99,7 +95,7 @@ class PreviewResep extends StatelessWidget {
                               ),
                               SizedBox(width: 4),
                               Text(
-                                recipe.rating.toString(),
+                                resep.rating.toString(),
                                 style: extraBoldTextStyle.copyWith(
                                   color: kWhiteColor,
                                 ),
@@ -125,7 +121,7 @@ class PreviewResep extends StatelessWidget {
                               ),
                               SizedBox(width: 4),
                               Text(
-                                "${recipe.duration} Menit",
+                                "${resep.duration} Menit",
                                 style: extraBoldTextStyle.copyWith(
                                   color: kWhiteColor,
                                 ),
@@ -137,7 +133,7 @@ class PreviewResep extends StatelessWidget {
                     ),
                     gapH(16),
                     Text(
-                      recipe.description,
+                      resep.description,
                       style: regularTextStyle.copyWith(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
@@ -181,7 +177,7 @@ class PreviewResep extends StatelessWidget {
                                 style: blackTextStyle.copyWith(fontSize: 24),
                               ),
                               gapH8,
-                              ...recipe.tools
+                              ...resep.tools
                                   .map((tool) => AlatCard(nama: tool))
                                   .toList(), // Generate tool cards
                               gapH(16),
@@ -190,7 +186,7 @@ class PreviewResep extends StatelessWidget {
                                 style: blackTextStyle.copyWith(fontSize: 24),
                               ),
                               gapH8,
-                              ...recipe.ingredients
+                              ...resep.ingredients
                                   .map((ingredient) => BahanCard(
                                       nama: ingredient.name,
                                       kadar: ingredient.quantity))
@@ -200,7 +196,7 @@ class PreviewResep extends StatelessWidget {
                           ListView(
                             padding: EdgeInsets.symmetric(vertical: 10),
                             children: [
-                              ...recipe.steps.asMap().entries.map((entry) {
+                              ...resep.steps.asMap().entries.map((entry) {
                                 int index = entry.key;
                                 String step = entry.value;
                                 return StepCard(

@@ -8,7 +8,7 @@ class Ingredient {
   });
 }
 
-class Recipe {
+class Resep {
   final int id;
   final int idUser;
   final String title;
@@ -20,8 +20,11 @@ class Recipe {
   final List<String> tools;
   final List<Ingredient> ingredients;
   final List<String> steps;
+  final DateTime createdAt;
+  String? username;
+  String? userImgUrl;
 
-  Recipe({
+  Resep({
     required this.id,
     required this.idUser,
     required this.title,
@@ -33,10 +36,13 @@ class Recipe {
     required this.tools,
     required this.ingredients,
     required this.steps,
+    required this.createdAt,
+    this.username,
+    this.userImgUrl,
   });
 
-  factory Recipe.fromJson(Map<String, dynamic> json) {
-    return Recipe(
+  factory Resep.fromJson(Map<String, dynamic> json) {
+    return Resep(
       id: json['id'] ?? 0,
       idUser: json['id_user'] ?? 0,
       title: json['title'] ?? 'No title',
@@ -60,10 +66,13 @@ class Recipe {
           ? List<String>.from(
               json['langkah'].map((step) => step['langkah'] ?? ''))
           : [],
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now()),
+      username: json['username'], // Menambahkan username
+      userImgUrl: json['userImgUrl'], // Menambahkan userImgUrl
     );
   }
 
-  Recipe copyWith({
+  Resep copyWith({
     int? id,
     int? idUser,
     String? title,
@@ -75,8 +84,9 @@ class Recipe {
     List<String>? tools,
     List<Ingredient>? ingredients,
     List<String>? steps,
+    DateTime? createdAt,
   }) {
-    return Recipe(
+    return Resep(
       id: id ?? this.id,
       idUser: idUser ?? this.idUser,
       title: title ?? this.title,
@@ -88,6 +98,9 @@ class Recipe {
       tools: tools ?? this.tools,
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
+      createdAt: createdAt ?? this.createdAt,
+      username: username ?? this.username,
+      userImgUrl: userImgUrl ?? this.userImgUrl,
     );
   }
 }

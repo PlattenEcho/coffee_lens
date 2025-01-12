@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: boldTextStyle.copyWith(fontSize: 28)),
             gapH(8),
             Text(
-              "Masuk menggunakan username atau buat akun",
+              "Masukkan kredensial akun kamu untuk mulai menggunakan aplikasi",
               style: whiteTextStyle.copyWith(
                 color: kGreyColor,
                 fontWeight: light,

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:coffee_vision/controller/resep_controller.dart';
 import 'package:coffee_vision/controller/storage_controller.dart';
-import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/model/resep.dart';
 import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/pages/preview_resep.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
@@ -123,24 +123,24 @@ class _UploadResepState extends State<UploadResep> {
                       .map((toolController) => toolController.text.trim())
                       .toList();
 
-                  Recipe recipe = Recipe(
-                    id: 0,
-                    idUser: 0,
-                    title: titleController.text.trim(),
-                    category: selectedCategory.trim(),
-                    duration: minuteController.text.trim(),
-                    description: descriptionController.text.trim(),
-                    imageUrl: image?.path ?? '',
-                    ingredients: ingredientList,
-                    rating: 4.8,
-                    steps: stepList,
-                    tools: toolList,
-                  );
+                  Resep resep = Resep(
+                      id: 0,
+                      idUser: 0,
+                      title: titleController.text.trim(),
+                      category: selectedCategory.trim(),
+                      duration: minuteController.text.trim(),
+                      description: descriptionController.text.trim(),
+                      imageUrl: image?.path ?? '',
+                      ingredients: ingredientList,
+                      rating: 4.8,
+                      steps: stepList,
+                      tools: toolList,
+                      createdAt: DateTime.now());
 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => PreviewResep(recipe: recipe)),
+                        builder: (context) => PreviewResep(resep: resep)),
                   );
                 }
               },
@@ -574,7 +574,7 @@ class _UploadResepState extends State<UploadResep> {
                         .map((toolController) => toolController.text.trim())
                         .toList();
 
-                    uploadRecipe(
+                    uploadResep(
                       context: context,
                       userId: storageController.getData("user")['id'],
                       title: titleController.text.trim(),
@@ -583,7 +583,6 @@ class _UploadResepState extends State<UploadResep> {
                       description: descriptionController.text.trim(),
                       imageUrl: image?.path ?? '',
                       ingredients: ingredientList,
-                      rating: 0,
                       steps: stepList,
                       tools: toolList,
                     );

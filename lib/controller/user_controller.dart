@@ -28,7 +28,7 @@ Future<void> updateProfile(
   }
 
   try {
-    final updateResponse = await supabase.from("users").update({
+    final updateResponse = await supabase.from("user").update({
       'username': newUsername,
       'deskripsi': newDescription,
       'img_url': imagePath != null ? imgUrl : user['img_url'],
@@ -60,7 +60,7 @@ Future<void> updateProfile(
 Future<List<Map<String, dynamic>>> fetchFollowings(int idUser) async {
   try {
     final response = await supabase
-        .from('follows')
+        .from('follow')
         .select('id_following(id, username, deskripsi, img_url)')
         .eq('id_follower', idUser);
 
@@ -74,7 +74,7 @@ Future<List<Map<String, dynamic>>> fetchFollowings(int idUser) async {
 Future<List<Map<String, dynamic>>> fetchFollowers(int idUser) async {
   try {
     final response = await supabase
-        .from('follows')
+        .from('follow')
         .select('id_follower(id, username, deskripsi, img_url)')
         .eq('id_following', idUser);
 

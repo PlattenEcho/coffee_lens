@@ -1,6 +1,6 @@
-import 'package:coffee_vision/controller/storage_controller.dart';
-import 'package:coffee_vision/main.dart';
-import 'package:coffee_vision/model/recipe.dart';
+import 'package:coffee_vision/controller/resep_controller.dart';
+import 'package:coffee_vision/model/resep.dart';
+import 'package:coffee_vision/view/pages/detail_resep.dart';
 import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/card.dart';
@@ -15,34 +15,26 @@ class FavoritPage extends StatefulWidget {
 }
 
 class _FavoritPageState extends State<FavoritPage> {
-  List<Recipe> recipes = [];
   bool loading = true;
+  late Future<List<Resep>>? fetchFavoritFuture;
+
   @override
   void initState() {
     super.initState();
-    fetchFavorites();
+    try {
+      fetchFavoritFuture = fetchFavorit();
+      loading = false;
+    } catch (e) {
+      showToast(context, "Error: ${{e.toString()}}");
+    }
   }
 
-  Future<void> fetchFavorites() async {
-    int userId = storageController.getData("user")['id'];
+  void refreshResepData() async {}
 
-    try {
-      final response = await supabase
-          .from('favorit')
-          .select('*, resep(*)')
-          .eq('id_user', userId);
-
-      setState(() {
-        recipes = (response as List).map((favoriteData) {
-          return Recipe.fromJson(favoriteData['resep']);
-        }).toList();
-      });
-    } catch (e) {
-      print(e.toString());
-    } finally {
-      setState(() {
-        loading = false;
-      });
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
     }
   }
 
@@ -69,66 +61,74 @@ class _FavoritPageState extends State<FavoritPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  recipes.isEmpty
-                      ? Center(
+                  FutureBuilder<List<Resep>>(
+                    future: fetchFavoritFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                            child: CircularProgressIndicator(
+                          color: kPrimaryColor,
+                        ));
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      } else if (snapshot.hasData &&
+                          snapshot.data!.isNotEmpty) {
+                        List<Resep> resepList = snapshot.data!;
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: resepList.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                            childAspectRatio: 0.67,
+                          ),
+                          itemBuilder: (context, index) {
+                            final resep = resepList[index];
+                            return ResepCard(
+                              idResep: resep.id,
+                              title: resep.title,
+                              category: resep.category,
+                              imgUrl: resep.imageUrl,
+                              rating: resep.rating,
+                              idUser: 1,
+                              username: resep.username ?? "",
+                              userImgUrl: resep.userImgUrl ?? "",
+                              createdAt: resep.createdAt,
+                              onClick: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetailResep(
+                                      idResep: resep.id,
+                                      rating: resep.rating,
+                                      idUser: resep.idUser,
+                                      imgUrl: resep.userImgUrl ?? "",
+                                    ),
+                                  ),
+                                ).then((isUpdated) {
+                                  if (isUpdated == true) {
+                                    setState(() {
+                                      fetchFavoritFuture = fetchFavorit();
+                                    });
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        );
+                      } else {
+                        return Center(
                           child: Text(
                             "Belum ada favorit yang ditambahkan!",
                             style: regularTextStyle.copyWith(fontSize: 16),
                           ),
-                        )
-                      : GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: recipes.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                            childAspectRatio: 0.76,
-                          ),
-                          itemBuilder: (context, index) {
-                            final recipe = recipes[index];
-
-                            return FutureBuilder(
-                              future: supabase
-                                  .from("rating")
-                                  .select("rating")
-                                  .eq("id_resep", recipe.id),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return SizedBox.shrink();
-                                } else if (snapshot.hasError) {
-                                  return Text('Error: ${snapshot.error}');
-                                } else if (!snapshot.hasData ||
-                                    (snapshot.data as List).isEmpty) {
-                                  return SizedBox.shrink();
-                                } else {
-                                  final ratings = snapshot.data as List;
-                                  final averageRating = ratings.isNotEmpty
-                                      ? ratings
-                                              .map((r) => (r['rating'] as num)
-                                                  .toDouble())
-                                              .reduce((a, b) => a + b) /
-                                          ratings.length
-                                      : 0.0;
-
-                                  return ResepCard(
-                                    title: recipe.title,
-                                    category: recipe.category,
-                                    idResep: recipe.id,
-                                    imgUrl: recipe.imageUrl,
-                                    rating: averageRating,
-                                    idUser: recipe.idUser,
-                                    userImgUrl: "",
-                                    username: "",
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        ),
+                        );
+                      }
+                    },
+                  ),
                   gapH(80)
                 ],
               ),

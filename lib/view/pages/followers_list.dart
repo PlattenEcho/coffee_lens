@@ -1,11 +1,8 @@
 import 'package:coffee_vision/controller/user_controller.dart';
-import 'package:coffee_vision/main.dart';
 import 'package:coffee_vision/view/pages/other_profile.dart';
-import 'package:coffee_vision/view/shared/gaps.dart';
 import 'package:coffee_vision/view/shared/theme.dart';
 import 'package:coffee_vision/view/widgets/card.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Ensure you have this import
 
 class FollowersList extends StatefulWidget {
   final int idUser;

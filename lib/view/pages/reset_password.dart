@@ -27,7 +27,7 @@ class ResetPassword extends StatelessWidget {
     final email = storageController.getData("otpData")['email'];
     String encryptedPassword = encryptMyData(password);
     await supabase
-        .from('users')
+        .from('user')
         .update({'password': encryptedPassword}).eq('email', email);
     storageController.removeData("otpData");
   }
@@ -40,7 +40,7 @@ class ResetPassword extends StatelessWidget {
         iconTheme: IconThemeData(color: kTextColor),
         backgroundColor: kPrimaryLightColor,
         title: Text(
-          "Ubah Password",
+          "Reset Password",
           style: blackTextStyle.copyWith(fontWeight: bold),
         ),
       ),
@@ -115,7 +115,7 @@ class ResetPassword extends StatelessWidget {
               Button(
                 bgColor: kPrimaryColor,
                 color: kWhiteColor,
-                text: "Simpan Password",
+                text: "Reset Password",
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -130,15 +130,16 @@ class ResetPassword extends StatelessWidget {
                   } else {
                     try {
                       updatePassword(password);
+                      Navigator.pop(context);
                       Navigator.of(context).pushNamedAndRemoveUntil(
                           '/auth', (Route<dynamic> route) => false);
                       showToast(context,
                           "Password berhasil diubah, silahkan login dengan password baru");
                     } catch (e) {
+                      Navigator.pop(context);
                       showToast(context, "Error: ${{e.toString()}} ");
                     }
                   }
-                  Navigator.pop(context);
                 },
               ),
             ],

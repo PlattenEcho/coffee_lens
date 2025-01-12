@@ -20,7 +20,7 @@ class _ResultPageState extends State<ResultPage> {
   int Result = 0;
   String? coffeeType;
   String? coffeeDescription;
-  Future<void> uploadImage() async {
+  Future<void> classifyImage() async {
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('http://192.168.56.1:5000/predict'),
@@ -61,7 +61,7 @@ class _ResultPageState extends State<ResultPage> {
   @override
   void initState() {
     super.initState();
-    uploadImage();
+    classifyImage();
   }
 
   @override
